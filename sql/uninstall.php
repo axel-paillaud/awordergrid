@@ -14,7 +14,7 @@ $sql = [];
 // Example table deletion (commented by default)
 // Uncomment and adapt according to your needs
 /*
-$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'awmodulebase_example`;';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'awordergrid_example`;';
 */
 
 foreach ($sql as $query) {

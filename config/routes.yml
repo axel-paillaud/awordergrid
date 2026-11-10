@@ -1,17 +1,17 @@
-awmodulebase_index:
-  path: /awmodulebase/index
+awordergrid_index:
+  path: /awordergrid/index
   methods: [GET]
   defaults:
-    _controller: 'Axelweb\AwModuleBase\Controller\AwModuleBaseController::index'
+    _controller: 'Axelweb\AwOrderGrid\Controller\AwOrderGridController::index'
     # Needed to work with tab system
-    _legacy_controller: AwModuleBase
-    _legacy_link: AwModuleBase
+    _legacy_controller: AwOrderGrid
+    _legacy_link: AwOrderGrid
 
-awmodulebase_form_configuration:
-  path: /awmodulebase/configuration
+awordergrid_form_configuration:
+  path: /awordergrid/configuration
   methods: [GET, POST]
   defaults:
-    _controller: 'Axelweb\AwModuleBase\Controller\AdminConfigurationController::index'
+    _controller: 'Axelweb\AwOrderGrid\Controller\AdminConfigurationController::index'
     # Needed to work with tab system
-    _legacy_controller: AdminAwModuleBase
-    _legacy_link: AdminAwModuleBase
+    _legacy_controller: AdminAwOrderGrid
+    _legacy_link: AdminAwOrderGrid

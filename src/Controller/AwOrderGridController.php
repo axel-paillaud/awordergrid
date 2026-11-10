@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace Axelweb\AwModuleBase\Controller;
+namespace Axelweb\AwOrderGrid\Controller;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -17,13 +17,13 @@ use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use PrestaShopBundle\Security\Annotation\AdminSecurity;
 use Symfony\Component\HttpFoundation\Response;
 
-class AwModuleBaseController extends FrameworkBundleAdminController
+class AwOrderGridController extends FrameworkBundleAdminController
 {
     /**
      * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
     public function index(): Response
     {
-        return $this->render('@Modules/awmodulebase/views/templates/admin/awmodulebase.html.twig');
+        return $this->render('@Modules/awordergrid/views/templates/admin/awordergrid.html.twig');
     }
 }

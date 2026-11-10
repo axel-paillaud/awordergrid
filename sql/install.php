@@ -14,14 +14,14 @@ $sql = [];
 // Example table creation (commented by default)
 // Uncomment and adapt according to your needs
 /*
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'awmodulebase_example` (
-    `id_awmodulebase_example` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'awordergrid_example` (
+    `id_awordergrid_example` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
     `value` TEXT DEFAULT NULL,
     `active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
     `date_add` DATETIME NOT NULL,
     `date_upd` DATETIME NOT NULL,
-    PRIMARY KEY (`id_awmodulebase_example`),
+    PRIMARY KEY (`id_awordergrid_example`),
     KEY `active` (`active`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;';
 */

@@ -6,7 +6,7 @@
   {{ form_start(generalForm) }}
   <div class="card">
     <h3 class="card-header">
-      <i class="material-icons">settings</i> {{ 'AwModuleBase Settings'|trans({}, 'Modules.Awmodulebase.Admin') }}
+      <i class="material-icons">settings</i> {{ 'AwOrderGrid Settings'|trans({}, 'Modules.Awordergrid.Admin') }}
     </h3>
     <div class="card-body">
       <div class="form-wrapper">
@@ -27,10 +27,10 @@
 
 {% block stylesheets %}
   {{ parent() }}
-  <link rel="stylesheet" href="{{ asset('../modules/awmodulebase/views/css/admin/form.css') }}">
+  <link rel="stylesheet" href="{{ asset('../modules/awordergrid/views/css/admin/form.css') }}">
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
-  <script src="{{ asset('../modules/awmodulebase/views/js/admin/form.js') }}"></script>
+  <script src="{{ asset('../modules/awordergrid/views/js/admin/form.js') }}"></script>
 {% endblock %}

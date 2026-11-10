@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace Axelweb\AwModuleBase\Form;
+namespace Axelweb\AwOrderGrid\Form;
 
 use PrestaShop\PrestaShop\Core\Configuration\DataConfigurationInterface;
 use PrestaShop\PrestaShop\Core\ConfigurationInterface;
@@ -17,7 +17,7 @@ use PrestaShop\PrestaShop\Core\ConfigurationInterface;
  */
 final class GeneralDataConfiguration implements DataConfigurationInterface
 {
-    public const AWMODULEBASE_SAMPLE_CONFIG = 'AWMODULEBASE_SAMPLE_CONFIG';
+    public const AWORDERGRID_SAMPLE_CONFIG = 'AWORDERGRID_SAMPLE_CONFIG';
 
     /**
      * @var ConfigurationInterface
@@ -32,7 +32,7 @@ final class GeneralDataConfiguration implements DataConfigurationInterface
     public function getConfiguration(): array
     {
         return [
-            'sample_config' => (string) $this->configuration->get(static::AWMODULEBASE_SAMPLE_CONFIG),
+            'sample_config' => (string) $this->configuration->get(static::AWORDERGRID_SAMPLE_CONFIG),
         ];
     }
 
@@ -59,7 +59,7 @@ final class GeneralDataConfiguration implements DataConfigurationInterface
         }
 
         // Persist
-        $this->configuration->set(static::AWMODULEBASE_SAMPLE_CONFIG, $sampleConfig);
+        $this->configuration->set(static::AWORDERGRID_SAMPLE_CONFIG, $sampleConfig);
 
         // empty = ok
         return $errors;

@@ -1,5 +1,5 @@
 {
-  "name": "axelweb/awmodulebase",
+  "name": "axelweb/awordergrid",
   "description": "PrestaShop module base template for development",
   "type": "prestashop-module",
   "license": "AFL-3.0",
@@ -11,7 +11,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Axelweb\\AwModuleBase\\": "src/"
+      "Axelweb\\AwOrderGrid\\": "src/"
     }
   },
   "require": {
@@ -19,7 +19,7 @@
   },
   "config": {
     "prepend-autoloader": false,
-    "autoloader-suffix": "AwModuleBase"
+    "autoloader-suffix": "AwOrderGrid"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.89"

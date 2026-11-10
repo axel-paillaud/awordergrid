@@ -11,7 +11,7 @@ if (!defined('_PS_VERSION_')) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-class AwModuleBase extends Module
+class AwOrderGrid extends Module
 {
     public $tabs = [
         [
@@ -19,16 +19,16 @@ class AwModuleBase extends Module
                 'en' => 'Module Base',
                 'fr' => 'Module Base',
             ],
-            'class_name' => 'AwModuleBase',
+            'class_name' => 'AwOrderGrid',
             'parent_class_name' => 'AdminParentModulesSf',
             'wording' => 'Module Base',
-            'wording_domain' => 'Modules.Awmodulebase.Admin',
+            'wording_domain' => 'Modules.Awordergrid.Admin',
         ],
     ];
 
     public function __construct()
     {
-        $this->name = 'awmodulebase';
+        $this->name = 'awordergrid';
         $this->tab = 'administration';
         $this->version = '1.0.0';
         $this->author = 'Axelweb';
@@ -38,10 +38,10 @@ class AwModuleBase extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->trans('Module Base', [], 'Modules.Awmodulebase.Admin');
-        $this->description = $this->trans('Base template module for PrestaShop development', [], 'Modules.Awmodulebase.Admin');
+        $this->displayName = $this->trans('Module Base', [], 'Modules.Awordergrid.Admin');
+        $this->description = $this->trans('Base template module for PrestaShop development', [], 'Modules.Awordergrid.Admin');
 
-        $this->confirmUninstall = $this->trans('Are you sure you want to uninstall this module?', [], 'Modules.Awmodulebase.Admin');
+        $this->confirmUninstall = $this->trans('Are you sure you want to uninstall this module?', [], 'Modules.Awordergrid.Admin');
 
         $this->ps_versions_compliancy = [
             'min' => '8.0',
@@ -63,7 +63,7 @@ class AwModuleBase extends Module
         $installed = parent::install()
             && $this->installDb()
             && $this->registerHook('actionFrontControllerSetMedia')
-            && Configuration::updateValue('AWMODULEBASE_SAMPLE_CONFIG', '');
+            && Configuration::updateValue('AWORDERGRID_SAMPLE_CONFIG', '');
 
         // Prevent 'Unable to generate a URL for the named route [...]' error,
         // clear Symfony cache
@@ -77,7 +77,7 @@ class AwModuleBase extends Module
     public function uninstall(): bool
     {
         return parent::uninstall()
-            && Configuration::deleteByName('AWMODULEBASE_SAMPLE_CONFIG')
+            && Configuration::deleteByName('AWORDERGRID_SAMPLE_CONFIG')
             && $this->uninstallDb();
     }
 
@@ -102,7 +102,7 @@ class AwModuleBase extends Module
      */
     public function getContent(): void
     {
-        $route = $this->get('router')->generate('awmodulebase_form_configuration');
+        $route = $this->get('router')->generate('awordergrid_form_configuration');
         Tools::redirectAdmin($route);
     }
 
@@ -112,8 +112,8 @@ class AwModuleBase extends Module
     public function hookActionFrontControllerSetMedia()
     {
         $this->context->controller->registerStylesheet(
-            'module-awmodulebase-style',
-            'modules/' . $this->name . '/views/css/awmodulebase.css',
+            'module-awordergrid-style',
+            'modules/' . $this->name . '/views/css/awordergrid.css',
             [
                 'media' => 'all',
                 'priority' => 200,
@@ -121,8 +121,8 @@ class AwModuleBase extends Module
         );
 
         $this->context->controller->registerJavascript(
-            'module-awmodulebase-script',
-            'modules/' . $this->name . '/views/js/awmodulebase.js',
+            'module-awordergrid-script',
+            'modules/' . $this->name . '/views/js/awordergrid.js',
             [
                 'position' => 'bottom',
                 'priority' => 200,
