@@ -1,6 +1,6 @@
 {
   "name": "axelweb/awordergrid",
-  "description": "PrestaShop module base template for development",
+  "description": "Adds carrier, tracking number and customer email columns to the PrestaShop back-office order grid",
   "type": "prestashop-module",
   "license": "AFL-3.0",
   "authors": [
@@ -15,7 +15,7 @@
     }
   },
   "require": {
-    "php": ">=7.1"
+    "php": ">=8.1"
   },
   "config": {
     "prepend-autoloader": false,
