@@ -29,7 +29,7 @@ class AwOrderGrid extends Module
         parent::__construct();
 
         $this->displayName = $this->trans('Order grid columns', [], 'Modules.Awordergrid.Admin');
-        $this->description = $this->trans('Adds carrier, tracking number and customer email columns to the back-office order list.', [], 'Modules.Awordergrid.Admin');
+        $this->description = $this->trans('Adds carrier, tracking number, customer email and marketplace columns to the back-office order list.', [], 'Modules.Awordergrid.Admin');
 
         $this->ps_versions_compliancy = [
             'min' => '8.0',
@@ -59,8 +59,12 @@ class AwOrderGrid extends Module
      */
     public function hookActionOrderGridDefinitionModifier(array $params): void
     {
-        (new OrderGridDefinitionModifier(Db::getInstance(), $this->getTranslator()))
-            ->modify($params['definition']);
+        (new OrderGridDefinitionModifier(
+            Db::getInstance(),
+            $this->getTranslator(),
+            $this->hasMarketplaceTable(),
+            (string) $this->context->language->date_format_lite
+        ))->modify($params['definition']);
     }
 
     /**
@@ -68,10 +72,24 @@ class AwOrderGrid extends Module
      */
     public function hookActionOrderGridQueryBuilderModifier(array $params): void
     {
-        (new OrderGridQueryModifier(_DB_PREFIX_))->modify(
+        (new OrderGridQueryModifier(_DB_PREFIX_, $this->hasMarketplaceTable()))->modify(
             $params['search_query_builder'],
             $params['count_query_builder'],
             $params['search_criteria']
+        );
+    }
+
+    /**
+     * Marketplace columns come from the amazon module table. It stays in place
+     * when the module is disabled, and is only dropped on uninstall.
+     */
+    private function hasMarketplaceTable(): bool
+    {
+        static $exists = null;
+
+        return $exists ??= (bool) Db::getInstance()->getValue(
+            'SELECT 1 FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = \'' . pSQL(_DB_PREFIX_ . 'marketplace_orders') . '\''
         );
     }
 }

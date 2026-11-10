@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin-dev" source-language="fr-FR" target-language="fr-FR" datatype="plaintext">
+    <body>
+      <trans-unit id="c22b5bb3ae44f9c2333754cfca4c9aeb">
+        <source>Order grid columns</source>
+        <target>Colonnes de la liste des commandes</target>
+      </trans-unit>
+      <trans-unit id="9360d177a802bd09d5c74ce0b6f6616a">
+        <source>Adds carrier, tracking number, customer email and marketplace columns to the back-office order list.</source>
+        <target>Ajoute des colonnes à la liste des commandes du back-office (transporteur, n° de suivi, email client, commandes marketplace).</target>
+      </trans-unit>
+      <trans-unit id="1fd8980e9bc821f10f56b1552890281d">
+        <source>Marketplace order ID</source>
+        <target>N° commande marketplace</target>
+      </trans-unit>
+      <trans-unit id="4d813b573a81c00f308e01f030d07545">
+        <source>Shipping deadline</source>
+        <target>Date limite d'expédition</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

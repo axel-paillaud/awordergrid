@@ -13,29 +13,39 @@ if (!defined('_PS_VERSION_')) {
 }
 
 use PrestaShop\PrestaShop\Core\Grid\Column\Type\Common\DataColumn;
+use PrestaShop\PrestaShop\Core\Grid\Column\Type\Common\DateTimeColumn;
 use PrestaShop\PrestaShop\Core\Grid\Definition\GridDefinitionInterface;
 use PrestaShop\PrestaShop\Core\Grid\Filter\Filter;
+use PrestaShopBundle\Form\Admin\Type\DateRangeType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Adds the carrier, tracking number and customer email columns (and their
- * filters) to the back-office order grid.
- *
- * Labels use core translation domains, already translated in every language.
+ * Order grid columns and filters:
+ * - adds carrier, tracking number and customer email (core translation domains)
+ * - adds marketplace order id and shipping deadline from the amazon module table
+ *   (translated in translations/fr-FR), only when that table exists
+ * - removes "New client" and "Delivery" (country), not used on this shop
  */
 class OrderGridDefinitionModifier
 {
     public function __construct(
         private readonly \Db $db,
         private readonly TranslatorInterface $translator,
+        private readonly bool $withMarketplace,
+        private readonly string $dateFormat,
     ) {
     }
 
     public function modify(GridDefinitionInterface $definition): void
     {
         $trans = $this->translator->trans(...);
+
+        foreach (self::REMOVED_COLUMNS as $id) {
+            $definition->getColumns()->remove($id);
+            $definition->getFilters()->remove($id);
+        }
 
         $definition->getColumns()
             ->addAfter(
@@ -80,7 +90,50 @@ class OrderGridDefinitionModifier
                     ->setTypeOptions(['required' => false])
                     ->setAssociatedColumn(OrderGridQueryModifier::COLUMN_TRACKING)
             );
+
+        if ($this->withMarketplace) {
+            $this->addMarketplaceColumns($definition);
+        }
     }
+
+    private function addMarketplaceColumns(GridDefinitionInterface $definition): void
+    {
+        $trans = $this->translator->trans(...);
+
+        $definition->getColumns()
+            ->addAfter(
+                'reference',
+                (new DataColumn(OrderGridQueryModifier::COLUMN_MP_ORDER_ID))
+                    ->setName($trans('Marketplace order ID', [], 'Modules.Awordergrid.Admin'))
+                    ->setOptions(['field' => OrderGridQueryModifier::COLUMN_MP_ORDER_ID])
+            )
+            ->addAfter(
+                'date_add',
+                (new DateTimeColumn(OrderGridQueryModifier::COLUMN_SHIP_DEADLINE))
+                    ->setName($trans('Shipping deadline', [], 'Modules.Awordergrid.Admin'))
+                    ->setOptions([
+                        'field' => OrderGridQueryModifier::COLUMN_SHIP_DEADLINE,
+                        // Amazon deadlines are always at 23:59:59, the date is enough
+                        'format' => $this->dateFormat,
+                        'empty_data' => '',
+                    ])
+            );
+
+        $definition->getFilters()
+            ->add(
+                (new Filter(OrderGridQueryModifier::COLUMN_MP_ORDER_ID, TextType::class))
+                    ->setTypeOptions(['required' => false])
+                    ->setAssociatedColumn(OrderGridQueryModifier::COLUMN_MP_ORDER_ID)
+            )
+            ->add(
+                (new Filter(OrderGridQueryModifier::COLUMN_SHIP_DEADLINE, DateRangeType::class))
+                    ->setTypeOptions(['required' => false])
+                    ->setAssociatedColumn(OrderGridQueryModifier::COLUMN_SHIP_DEADLINE)
+            );
+    }
+
+    /** Core columns (and their filters) removed from the grid */
+    private const REMOVED_COLUMNS = ['new', 'country_name'];
 
     /**
      * Distinct carrier names, as label => value.

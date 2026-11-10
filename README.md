@@ -6,12 +6,19 @@ Replaces the order list customisation previously done with `ambbocustomizer`.
 
 ## Columns
 
+Added (all filterable and sortable):
+
 - Carrier
 - Tracking number
 - Customer email
+- Marketplace order ID and shipping deadline, read from the `marketplace_orders` table of the
+  `amazon` module (only when that table exists). Disable the same columns in the amazon module
+  settings to avoid duplicates: its own filters only apply to the current page on PS 9.2.
 
-All three are filterable and sortable. The carrier filter matches on the carrier name, so every
-version of a carrier (PrestaShop creates a new `id_carrier` on each edit) is included.
+Removed: "New client" and "Delivery" (country, France for every order).
+
+The carrier filter matches on the carrier name, so every version of a carrier (PrestaShop creates
+a new `id_carrier` on each edit) is included.
 
 ## How it works
 

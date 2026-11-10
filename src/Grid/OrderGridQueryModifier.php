@@ -32,6 +32,14 @@ class OrderGridQueryModifier
     public const COLUMN_CARRIER = 'aw_carrier';
     public const COLUMN_TRACKING = 'aw_tracking_number';
     public const COLUMN_EMAIL = 'aw_customer_email';
+    public const COLUMN_MP_ORDER_ID = 'aw_mp_order_id';
+    public const COLUMN_SHIP_DEADLINE = 'aw_latest_ship_date';
+
+    /** Text filters, matched with LIKE or = */
+    private const TEXT_FILTERS = [self::COLUMN_CARRIER, self::COLUMN_TRACKING, self::COLUMN_EMAIL, self::COLUMN_MP_ORDER_ID];
+
+    /** Date range filters (DateRangeType: ['from' => 'Y-m-d', 'to' => 'Y-m-d']) */
+    private const DATE_FILTERS = [self::COLUMN_SHIP_DEADLINE];
 
     /**
      * Mirror of OrderQueryBuilder::applySorting(), used when the id sub-query
@@ -49,29 +57,48 @@ class OrderGridQueryModifier
         'date_add' => 'o.`date_add`',
     ];
 
-    public function __construct(private readonly string $dbPrefix)
-    {
+    public function __construct(
+        private readonly string $dbPrefix,
+        private readonly bool $withMarketplace,
+    ) {
     }
 
     public function modify(QueryBuilder $searchQb, QueryBuilder $countQb, SearchCriteriaInterface $criteria): void
     {
         $filters = $this->getOwnFilters($criteria->getFilters());
         $sort = $this->getOwnSort()[$criteria->getOrderBy()] ?? null;
+        if (!$this->withMarketplace) {
+            unset($filters[self::COLUMN_MP_ORDER_ID], $filters[self::COLUMN_SHIP_DEADLINE]);
+            if (in_array($criteria->getOrderBy(), [self::COLUMN_MP_ORDER_ID, self::COLUMN_SHIP_DEADLINE], true)) {
+                $sort = null;
+            }
+        }
 
         // Display: the search query only holds the current page, these joins are cheap
         $searchQb
             ->addSelect('ca.`name` AS ' . self::COLUMN_CARRIER)
             ->addSelect('cu.`email` AS ' . self::COLUMN_EMAIL)
-            ->addSelect('(' . $this->getTrackingListSql() . ') AS ' . self::COLUMN_TRACKING)
-            ->leftJoin('o', $this->dbPrefix . 'carrier', 'ca', 'ca.`id_carrier` = o.`id_carrier`');
+            ->addSelect('(' . $this->getTrackingListSql() . ') AS ' . self::COLUMN_TRACKING);
+        $this->joinCarrier($searchQb);
+
+        if ($this->withMarketplace) {
+            $searchQb
+                ->addSelect('awmpo.`mp_order_id` AS ' . self::COLUMN_MP_ORDER_ID)
+                ->addSelect('awmpo.`latest_ship_date` AS ' . self::COLUMN_SHIP_DEADLINE);
+            $this->joinMarketplaceOrder($searchQb);
+        }
 
         if (!$filters && null === $sort) {
             return;
         }
 
         // Filters on the count query, which is the base query of the id sub-query
-        if (isset($filters[self::COLUMN_CARRIER]) || self::COLUMN_CARRIER === $criteria->getOrderBy()) {
-            $countQb->leftJoin('o', $this->dbPrefix . 'carrier', 'ca', 'ca.`id_carrier` = o.`id_carrier`');
+        $used = array_merge(array_keys($filters), [(string) $criteria->getOrderBy()]);
+        if (in_array(self::COLUMN_CARRIER, $used, true)) {
+            $this->joinCarrier($countQb);
+        }
+        if (array_intersect([self::COLUMN_MP_ORDER_ID, self::COLUMN_SHIP_DEADLINE], $used)) {
+            $this->joinMarketplaceOrder($countQb);
         }
         $this->applyFilters($countQb, $filters);
 
@@ -108,15 +135,44 @@ class OrderGridQueryModifier
         }
     }
 
+    private function joinCarrier(QueryBuilder $qb): void
+    {
+        $qb->leftJoin('o', $this->dbPrefix . 'carrier', 'ca', 'ca.`id_carrier` = o.`id_carrier`');
+    }
+
     /**
-     * @return array<string, string> filter name => trimmed value
+     * Table of the amazon module (one row per marketplace order, id_order is the primary key)
+     */
+    private function joinMarketplaceOrder(QueryBuilder $qb): void
+    {
+        $qb->leftJoin('o', $this->dbPrefix . 'marketplace_orders', 'awmpo', 'awmpo.`id_order` = o.`id_order`');
+    }
+
+    /**
+     * @return array<string, string|array{from?: string, to?: string}> active filters, validated
      */
     private function getOwnFilters(array $filters): array
     {
         $own = [];
-        foreach ([self::COLUMN_CARRIER, self::COLUMN_TRACKING, self::COLUMN_EMAIL] as $name) {
+        foreach (self::TEXT_FILTERS as $name) {
             if (isset($filters[$name]) && is_scalar($filters[$name]) && '' !== trim((string) $filters[$name])) {
                 $own[$name] = trim((string) $filters[$name]);
+            }
+        }
+
+        foreach (self::DATE_FILTERS as $name) {
+            if (!isset($filters[$name]) || !is_array($filters[$name])) {
+                continue;
+            }
+            $range = [];
+            foreach (['from', 'to'] as $bound) {
+                $date = $filters[$name][$bound] ?? null;
+                if (is_string($date) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    $range[$bound] = $date;
+                }
+            }
+            if ($range) {
+                $own[$name] = $range;
             }
         }
 
@@ -141,6 +197,20 @@ class OrderGridQueryModifier
                 WHERE awoc.`id_order` = o.`id_order` AND awoc.`tracking_number` LIKE :aw_tracking_number)'
             )->setParameter('aw_tracking_number', '%' . $filters[self::COLUMN_TRACKING] . '%');
         }
+
+        if (isset($filters[self::COLUMN_MP_ORDER_ID])) {
+            $qb->andWhere('awmpo.`mp_order_id` LIKE :aw_mp_order_id')
+                ->setParameter('aw_mp_order_id', '%' . $filters[self::COLUMN_MP_ORDER_ID] . '%');
+        }
+
+        if (isset($filters[self::COLUMN_SHIP_DEADLINE]['from'])) {
+            $qb->andWhere('awmpo.`latest_ship_date` >= :aw_latest_ship_date_from')
+                ->setParameter('aw_latest_ship_date_from', $filters[self::COLUMN_SHIP_DEADLINE]['from'] . ' 00:00:00');
+        }
+        if (isset($filters[self::COLUMN_SHIP_DEADLINE]['to'])) {
+            $qb->andWhere('awmpo.`latest_ship_date` <= :aw_latest_ship_date_to')
+                ->setParameter('aw_latest_ship_date_to', $filters[self::COLUMN_SHIP_DEADLINE]['to'] . ' 23:59:59');
+        }
     }
 
     /**
@@ -153,6 +223,8 @@ class OrderGridQueryModifier
         return [
             self::COLUMN_CARRIER => 'ca.`name`',
             self::COLUMN_EMAIL => 'cu.`email`',
+            self::COLUMN_MP_ORDER_ID => 'awmpo.`mp_order_id`',
+            self::COLUMN_SHIP_DEADLINE => 'awmpo.`latest_ship_date`',
             self::COLUMN_TRACKING => '(SELECT MAX(awoc.`tracking_number`) FROM `' . $this->dbPrefix . 'order_carrier` awoc
                 WHERE awoc.`id_order` = o.`id_order`)',
         ];
