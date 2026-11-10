@@ -10,6 +10,18 @@ Replaces the order list customisation previously done with `ambbocustomizer`.
 - Tracking number
 - Customer email
 
+All three are filterable and sortable. The carrier filter matches on the carrier name, so every
+version of a carrier (PrestaShop creates a new `id_carrier` on each edit) is included.
+
+## How it works
+
+- `actionOrderGridDefinitionModifier`: columns and filters (`src/Grid/OrderGridDefinitionModifier.php`)
+- `actionOrderGridQueryBuilderModifier`: select, filter, sort (`src/Grid/OrderGridQueryModifier.php`)
+
+Since PrestaShop 9.2 the order grid paginates order ids first, in a sub-query already rendered in
+the FROM clause. When one of our filters or sorts is active, that sub-query is rebuilt from the
+count query, otherwise the filter would only apply to the current page.
+
 ## Requirements
 
 - PrestaShop 8.0+ (target: 9.2)
